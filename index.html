@@ -1,0 +1,113 @@
+﻿<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>D1114181004 - 星際躲避者</title>
+    <style>
+        body {
+            margin: 0;
+            background: #050505;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        canvas {
+            border: 2px solid #444;
+            background: #000;
+            margin-top: 20px;
+            cursor: none;
+        }
+
+        .info {
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        #score {
+            font-size: 24px;
+            color: #00ffcc;
+        }
+    </style>
+</head>
+<body>
+    <h1>學號：D1114181004 遊戲專案</h1>
+    <div class="info">滑鼠移動控制方塊，躲避紅色隕石！<br><span id="score">分數: 0</span></div>
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+
+        canvas.width = 600;
+        canvas.height = 400;
+
+        let score = 0;
+        let gameActive = true;
+        let player = { x: 300, y: 350, size: 20, color: '#00ffcc' };
+        let enemies = [];
+
+        // 監聽滑鼠
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            player.x = e.clientX - rect.left - player.size / 2;
+        });
+
+        function spawnEnemy() {
+            if (Math.random() < 0.05) {
+                enemies.push({
+                    x: Math.random() * canvas.width,
+                    y: -20,
+                    size: Math.random() * 20 + 10,
+                    speed: Math.random() * 3 + 2
+                });
+            }
+        }
+
+        function update() {
+            if (!gameActive) return;
+
+            enemies.forEach((enemy, index) => {
+                enemy.y += enemy.speed;
+                // 碰撞檢測
+                if (player.x < enemy.x + enemy.size && player.x + player.size > enemy.x &&
+                    player.y < enemy.y + enemy.size && player.y + player.size > enemy.y) {
+                    gameActive = false;
+                    alert("遊戲結束！最終分數：" + score + "\n按重新整理再次挑戰！");
+                    location.reload();
+                }
+                // 移除出界敵方
+                if (enemy.y > canvas.height) {
+                    enemies.splice(index, 1);
+                    score++;
+                    scoreElement.innerText = "分數: " + score;
+                }
+            });
+            spawnEnemy();
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // 畫玩家
+            ctx.fillStyle = player.color;
+            ctx.fillRect(player.x, player.y, player.size, player.size);
+            // 畫敵人
+            ctx.fillStyle = '#ff4444';
+            enemies.forEach(enemy => {
+                ctx.fillRect(enemy.x, enemy.y, enemy.size, enemy.size);
+            });
+        }
+
+        function loop() {
+            update();
+            draw();
+            requestAnimationFrame(loop);
+        }
+        loop();
+    </script>
+</body>
+</html>
